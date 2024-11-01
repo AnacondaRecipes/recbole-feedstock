@@ -10,6 +10,7 @@ source:
     sha256: 132a8a706462b26bed82d409b67fbc09e90b3a49b607c7ba76c2f1718d8ddc17
     patches:
       - patches/0001-update-colorlog-pinning.patch
+      - patches/0002-update-randomstate-to-default_rng-for-hyperopt.patch
   # use github release archive for tests
   - url: https://github.com/RUCAIBox/RecBole/archive/refs/tags/v{{ version }}.tar.gz
     sha256: 1bc77a567083884b41ddd652b9b35078a0c3554c39ca38ab825ab2681eef138e
@@ -19,7 +20,7 @@ build:
   number: 0
   # s390x: kmeans-pytorch (numba) unavailable
   # py>=312: ray unavailable
-  # skip: True  # [py<38 or py>311 or s390x]
+  skip: True  # [py<38 or py>311 or s390x]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
@@ -35,7 +36,13 @@ requirements:
     - python
     - pytorch >=1.10.0
     - numpy >=1.17.2
-    - scipy >=1.6.0
+    # Introduced upper pinning for scipy because of
+    # https://github.com/RUCAIBox/RecBole/issues/2034
+    # https://github.com/RUCAIBox/RecBole/issues/2090
+    # similar to any other like
+    # https://github.com/mmaelicke/scikit-gstat/issues/178
+    # it can be removed when issues are closed.
+    - scipy >=1.6.0,<1.13.0a0
     - pandas >=1.3.0
     - tqdm >=4.48.2
     # colorlog pinning relaxed to lower bound instead of exact
@@ -50,11 +57,17 @@ requirements:
     - plotly >=4.0.0
     - texttable >=0.9.0
     - psutil >=5.9.0
-    - ray-core >=1.13.0,<=2.6.3
+    # ray-tune is needed:
+    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/recbole/quick_start/quick_start.py#L20
+    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/conda/meta.yaml#L44
+    - ray-tune >=1.13.0,<=2.6.3
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L51
     - kmeans-pytorch
   run_constrained:
-    - hyperopt 0.2.5
+    # originally ==0.2.5 adapted with a patch
+    # to work with the more recent version we
+    # have (0.2.7)
+    - hyperopt >=0.2.5
 
 test:
   imports:
@@ -62,17 +75,40 @@ test:
   requires:
     - pip
     - pytest
+    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L36-L51
+    - xgboost
+    - lightgbm
+    - faiss
+    - hyperopt
   source_files:
     - gh_src/run_recbole.py
     - gh_src/tests
   commands:
     - pip check
     - cd gh_src
+    # Smoke test from the CI
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L55
     - python run_recbole.py --model=BPR --epochs=2
+    # Tests run as specified in run_test.sh
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/run_test.sh#L7C1-L7C48
+    # "python -m pytest" is used instead of "pytest"
+    # As suggested in
+    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L52
     - python -m pytest -v tests/config/test_config.py
     - python -m pytest -v tests/config/test_overall.py
+    # config tests
+    - python tests/config/test_command_line.py --use_gpu=False --valid_metric=Recall@10  --metrics="['Recall']" --epochs=200 --learning_rate=0.3
+    # evaluation_setting tests
+    - python -m pytest -v tests/evaluation_setting
+    # model tests
+    - python -m pytest -v tests/model/test_model_auto.py
+    # disabled: requires manual intervention
+    # - python -m pytest -vv tests/model/test_model_manual.py
+    # data tests
+    - python -m pytest -v tests/data/test_dataset.py
+    - python -m pytest -v tests/data/test_dataloader.py
+    # hyper_tuning tests, require optional dep hyperopt
+    - python -m pytest -v tests/hyper_tuning/test_hyper_tuning.py
 
 about:
   home: https://recbole.io

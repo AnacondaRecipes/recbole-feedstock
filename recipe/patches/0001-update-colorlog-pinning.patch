@@ -1,7 +1,7 @@
 From dc6746147b2d24edb5b0049698facea040c55186 Mon Sep 17 00:00:00 2001
 From: Lorenzo Pirritano <lpirritano@anaconda.com>
 Date: Fri, 1 Nov 2024 11:16:58 +0100
-Subject: [PATCH] update colorlog pinning
+Subject: [PATCH 1/2] update colorlog pinning
 
 ---
  setup.py | 2 +-
