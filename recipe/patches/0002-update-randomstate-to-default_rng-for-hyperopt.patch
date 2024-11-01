@@ -5,7 +5,7 @@ Subject: [PATCH 2/2] update RandomState to  default_rng for hyperopt
 
 NB this patch file must have CRLF line endings because the source file
    that patches has CRLF line endings. This is achieved in .gitattributes
- 
+
 Fixes:
 'numpy.random.mtrand.RandomState' object has no attribute 'integers'
 
