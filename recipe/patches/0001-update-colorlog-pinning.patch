@@ -1,0 +1,25 @@
+From dc6746147b2d24edb5b0049698facea040c55186 Mon Sep 17 00:00:00 2001
+From: Lorenzo Pirritano <lpirritano@anaconda.com>
+Date: Fri, 1 Nov 2024 11:16:58 +0100
+Subject: [PATCH] update colorlog pinning
+
+---
+ setup.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/setup.py b/setup.py
+index 9fa8cba..8c1334b 100644
+--- a/setup.py
++++ b/setup.py
+@@ -12,7 +12,7 @@ install_requires = [
+     "scipy>=1.6.0",
+     "pandas>=1.4.0",
+     "tqdm>=4.48.2",
+-    "colorlog==4.7.2",
++    "colorlog>=4.7.2",
+     "colorama==0.4.4",
+     "scikit_learn>=0.23.2",
+     "pyyaml>=5.1.0",
+-- 
+2.39.1
+
