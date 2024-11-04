@@ -68,6 +68,8 @@ requirements:
     # to work with the more recent version we
     # have (0.2.7)
     - hyperopt >=0.2.5
+    # mkl variant pulls in intel-openmp which conflicts with llvm-openmp. i.e. force to use openblas variant of numpy, scipy, etc.
+    - blas=* =openblas  # [osx and x86_64]
 
 test:
   imports:
