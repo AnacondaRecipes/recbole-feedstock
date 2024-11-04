@@ -94,21 +94,21 @@ test:
     # "python -m pytest" is used instead of "pytest"
     # As suggested in
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L52
-    - python -m pytest -v tests/config/test_config.py
-    - python -m pytest -v tests/config/test_overall.py
+    - python -m pytest -vv tests/config/test_config.py
+    - python -m pytest -vv tests/config/test_overall.py
     # config tests
     - python tests/config/test_command_line.py --use_gpu=False --valid_metric=Recall@10  --metrics="['Recall']" --epochs=200 --learning_rate=0.3
     # evaluation_setting tests
-    - python -m pytest -v tests/evaluation_setting
+    - python -m pytest -vv tests/evaluation_setting
     # model tests
-    - python -m pytest -v tests/model/test_model_auto.py
+    - python -m pytest -vv tests/model/test_model_auto.py
     # disabled: requires manual intervention
     # - python -m pytest -vv tests/model/test_model_manual.py
     # data tests
-    - python -m pytest -v tests/data/test_dataset.py
-    - python -m pytest -v tests/data/test_dataloader.py
+    - python -m pytest -vv tests/data/test_dataset.py
+    - python -m pytest -vv tests/data/test_dataloader.py
     # hyper_tuning tests, require optional dep hyperopt
-    - python -m pytest -v tests/hyper_tuning/test_hyper_tuning.py
+    - python -m pytest -vv tests/hyper_tuning/test_hyper_tuning.py
 
 about:
   home: https://recbole.io
