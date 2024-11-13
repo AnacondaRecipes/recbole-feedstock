@@ -61,15 +61,39 @@ requirements:
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/recbole/quick_start/quick_start.py#L20
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/conda/meta.yaml#L44
     - ray-tune >=1.13.0,<=2.6.3
-    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L51
+    # The following dependencies are specified in the CI
+    # and it's not clear if they are mandatory or not.
+    # We contacted the upstream authors but received no answer,
+    # therefore we decided to set those dependencies as
+    # runtime dependencies and ship most of the recommenders
+    # except KGAT (missing 'dgl'), KGIN, and MCCLK (missing
+    # 'torch-scatter').
+    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L36-L51
     - kmeans-pytorch
-  run_constrained:
+    - xgboost
+    - lightgbm
+    - faiss-cpu
+    - networkx
+    - protobuf #3.19.0
     # originally ==0.2.5 adapted with a patch
     # to work with the more recent version we
     # have (0.2.7)
     - hyperopt >=0.2.5
-    # mkl variant pulls in intel-openmp which conflicts with llvm-openmp. i.e. force to use openblas variant of numpy, scipy, etc.
-    - blas=* =openblas  # [osx and x86_64]
+
+# skip tests KGIN and MCCLK recommenders (they use
+# torch-scatter, unavailable)
+{% set tests_to_skip = "test_kgin" %}
+{% set tests_to_skip = tests_to_skip + " or test_mcclk" %}
+# skip tests KGAT recommenders (they use dgl, unavailable)
+{% set tests_to_skip = tests_to_skip + " or test_kgat" %}
+# faiss-cpu not available for some MKL issue for py 3.8 on osx-64
+# https://github.com/AnacondaRecipes/faiss-split-feedstock/blob/main/recipe/meta.yaml#L112
+# also, this problem occurs for osx-64 on "from . import _swigfaiss" then "_mkl_blas_caxpy"
+# is not found:
+# https://github.com/facebookresearch/faiss/issues/1755
+# https://discourse.cmake.org/t/mkl-64lp-versus-64ilp-difficulties/1223
+{% set tests_to_skip = tests_to_skip + " or test_NCL" %}  # [osx and x86_64]
+
 
 test:
   imports:
@@ -77,11 +101,6 @@ test:
   requires:
     - pip
     - pytest
-    # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L36-L51
-    - xgboost
-    - lightgbm
-    - faiss
-    - hyperopt
   source_files:
     - gh_src/run_recbole.py
     - gh_src/tests
@@ -103,13 +122,13 @@ test:
     # evaluation_setting tests
     - python -m pytest -vv tests/evaluation_setting
     # model tests
-    - python -m pytest -vv tests/model/test_model_auto.py
+    - python -m pytest -vv tests/model/test_model_auto.py -k "not ({{ tests_to_skip }})"  
     # disabled: requires manual intervention
     # - python -m pytest -vv tests/model/test_model_manual.py
     # data tests
     - python -m pytest -vv tests/data/test_dataset.py
     - python -m pytest -vv tests/data/test_dataloader.py
-    # hyper_tuning tests, require optional dep hyperopt
+    # hyper_tuning tests
     - python -m pytest -vv tests/hyper_tuning/test_hyper_tuning.py
 
 about:
