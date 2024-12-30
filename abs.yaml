@@ -1,7 +1,2 @@
 upload_channels:
   - sfe1ed40
-
-channels:
-  - https://staging.continuum.io/prefect/fs/thop-feedstock/pr1/99ca078
-  - https://staging.continuum.io/prefect/fs/kmeans-pytorch-feedstock/pr1/7b96899
-  - https://staging.continuum.io/prefect/fs/setproctitle-feedstock/pr1/daa8b86
