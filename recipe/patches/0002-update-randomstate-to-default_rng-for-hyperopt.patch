@@ -1,0 +1,35 @@
+From 609847dbc848e8d8f9babc3534e34dc74d6d78b1 Mon Sep 17 00:00:00 2001
+From: Lorenzo Pirritano <lpirritano@anaconda.com>
+Date: Fri, 1 Nov 2024 16:06:00 +0100
+Subject: [PATCH 2/2] update RandomState to  default_rng for hyperopt
+
+NB this patch file must have CRLF line endings because the source file
+   that patches has CRLF line endings. This is achieved in .gitattributes
+
+Fixes:
+'numpy.random.mtrand.RandomState' object has no attribute 'integers'
+
+For using new hyperopt 0.2.7 rather than the one set by upstream 0.2.5.
+
+See: https://github.com/hyperopt/hyperopt/issues/838
+
+---
+ recbole/trainer/hyper_tuning.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/recbole/trainer/hyper_tuning.py b/recbole/trainer/hyper_tuning.py
+index ee1cfd6..cad9a65 100644
+--- a/recbole/trainer/hyper_tuning.py
++++ b/recbole/trainer/hyper_tuning.py
+@@ -113,7 +113,7 @@ def exhaustive_search(new_ids, domain, trials, seed, nbMaxSucessiveFailures=1000
+         ]
+     )
+ 
+-    rng = np.random.RandomState(seed)
++    rng = np.random.default_rng(seed)
+     rval = []
+     for _, new_id in enumerate(new_ids):
+         newSample = False
+-- 
+2.39.1
+
