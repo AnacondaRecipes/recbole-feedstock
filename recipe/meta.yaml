@@ -61,11 +61,40 @@ requirements:
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/recbole/quick_start/quick_start.py#L20
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/conda/meta.yaml#L44
     - ray-tune >=1.13.0,<=2.6.3
+  run_constrained:
+    # originally ==0.2.5 adapted with a patch
+    # to work with the more recent version we
+    # have (0.2.7)
+    - hyperopt >=0.2.5
+
+# skip tests KGIN and MCCLK recommenders (they use
+# torch-scatter, optional and unavailable)
+{% set tests_to_skip = "test_kgin" %}
+{% set tests_to_skip = tests_to_skip + " or test_mcclk" %}
+# skip tests KGAT recommenders (they use dgl, optional and unavailable)
+{% set tests_to_skip = tests_to_skip + " or test_kgat" %}
+# faiss-cpu not available for some MKL issue for py 3.8 on osx-64
+# https://github.com/AnacondaRecipes/faiss-split-feedstock/blob/main/recipe/meta.yaml#L112
+# also, this problem occurs for osx-64 on "from . import _swigfaiss" then "_mkl_blas_caxpy"
+# is not found:
+# https://github.com/facebookresearch/faiss/issues/1755
+# https://discourse.cmake.org/t/mkl-64lp-versus-64ilp-difficulties/1223
+{% set tests_to_skip = tests_to_skip + " or test_NCL" %}  # [osx and x86_64]
+{% set tests_to_skip = tests_to_skip + " or TestSequentialRecommender" %}  # [osx or (linux and aarch64)]
+
+
+test:
+  imports:
+    - recbole
+  requires:
+    - pip
+    - pytest
+    - hyperopt
     # The following dependencies are specified in the CI
-    # and it's not clear if they are mandatory or not.
-    # We contacted the upstream authors but received no answer,
-    # therefore we decided to set those dependencies as
-    # runtime dependencies and ship most of the recommenders
+    # and they are optional.
+    # We contacted the upstream authors and they seem optional:
+    # https://github.com/RUCAIBox/RecBole/issues/2105#issuecomment-2559262386
+    # Most of the recommenders are available optionally
     # except KGAT (missing 'dgl'), KGIN, and MCCLK (missing
     # 'torch-scatter').
     # https://github.com/RUCAIBox/RecBole/blob/v1.2.0/.github/workflows/python-package.yml#L36-L51
@@ -75,32 +104,6 @@ requirements:
     - faiss-cpu
     - networkx
     - protobuf #3.19.0
-    # originally ==0.2.5 adapted with a patch
-    # to work with the more recent version we
-    # have (0.2.7)
-    - hyperopt >=0.2.5
-
-# skip tests KGIN and MCCLK recommenders (they use
-# torch-scatter, unavailable)
-{% set tests_to_skip = "test_kgin" %}
-{% set tests_to_skip = tests_to_skip + " or test_mcclk" %}
-# skip tests KGAT recommenders (they use dgl, unavailable)
-{% set tests_to_skip = tests_to_skip + " or test_kgat" %}
-# faiss-cpu not available for some MKL issue for py 3.8 on osx-64
-# https://github.com/AnacondaRecipes/faiss-split-feedstock/blob/main/recipe/meta.yaml#L112
-# also, this problem occurs for osx-64 on "from . import _swigfaiss" then "_mkl_blas_caxpy"
-# is not found:
-# https://github.com/facebookresearch/faiss/issues/1755
-# https://discourse.cmake.org/t/mkl-64lp-versus-64ilp-difficulties/1223
-{% set tests_to_skip = tests_to_skip + " or test_NCL" %}  # [osx and x86_64]
-
-
-test:
-  imports:
-    - recbole
-  requires:
-    - pip
-    - pytest
   source_files:
     - gh_src/run_recbole.py
     - gh_src/tests
